@@ -6,12 +6,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SemplyBot extends TelegramLongPollingBot {
 
+    private Map<String, Integer> users = new ConcurrentHashMap<>();
 
     public void onUpdateReceived(Update update) {
 
@@ -19,6 +19,8 @@ public class SemplyBot extends TelegramLongPollingBot {
             String textMsg = update.getMessage().getText();
             String textAnsw;
             Long chatId = update.getMessage().getChatId();
+
+            users.merge(update.getMessage().getFrom().getFirstName(), 1, Integer::sum);
 
             if (textMsg.startsWith("/")) {
                 switch (textMsg.toLowerCase()) {
@@ -32,6 +34,12 @@ public class SemplyBot extends TelegramLongPollingBot {
                         sendmsg(chatId, textAnsw);
                         break;
                     }
+                    case "/showusers": {
+                        StringBuilder answ = new StringBuilder();
+                        users.forEach((k, v) -> answ.append(k + " - " + String.valueOf(v) + "\n"));
+                        sendmsg(chatId, answ.toString());
+                        break;
+                    }
                 }
             } else {
                 textAnsw = textMsg;
@@ -41,7 +49,7 @@ public class SemplyBot extends TelegramLongPollingBot {
 
     }
 
-    private synchronized void setKeyboard(SendMessage message){
+    private synchronized void setKeyboard(SendMessage message) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup()
                 .setSelective(true)
                 .setResizeKeyboard(false)
