@@ -67,7 +67,6 @@ public class SemplyBot extends TelegramLongPollingBot {
         }
     }
 
-
     public String getBotUsername() {
         return "SempliBot";
     }
